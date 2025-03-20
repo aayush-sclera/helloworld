@@ -46,6 +46,14 @@ jobs:
           username: root
           password: 1a2s3d4f5g@1993
           script: |
-            pkill -f "java -jar" || echo "No process found"
-            nohup java -jar /root/deployment/target/*.jar > /root/deployment/app.log 2>&1 &
+            # Stop the service if it's running
+            systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
+
+            # Start the service with the new JAR file
+            systemctl start helloworldcicdtest.service
+
+            # Optionally check the status to ensure it started correctly
+            systemctl status helloworldcicdtest.service || echo "Failed to start service"
+
+            # If you want to make sure it's running in the background
             echo "Application restarted successfully"
