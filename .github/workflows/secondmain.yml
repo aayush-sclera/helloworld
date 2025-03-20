@@ -47,5 +47,5 @@ jobs:
           password: 1a2s3d4f5g@1993
           script: |
             pkill -f "java -jar" || echo "No process found"
-            nohup java -jar /root/deployment/*.jar > /root/deployment/app.log 2>&1 &
+            nohup java -jar /root/deployment/target/*.jar > /root/deployment/app.log 2>&1 &
             echo "Application restarted successfully"
