@@ -49,7 +49,7 @@ jobs:
             apt-get update && apt-get install -y mysql-client
 
             # Run the SQL migration script
-            mysql -h localhost -u root -password@123 cicdpipeline < /src/main/resources/migration.sql
+            mysql -h localhost -u root -p password@123 cicdpipeline < /src/main/resources/migration.sql
             
       - name: Restart Application on Server
         uses: appleboy/ssh-action@v0.1.8
@@ -57,6 +57,7 @@ jobs:
           host: 156.67.105.82
           username: root
           password: 1a2s3d4f5g@1993
+          debug: true
           script: |
             # Stop the service if it's running
             systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
