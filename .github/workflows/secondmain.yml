@@ -50,7 +50,7 @@ jobs:
           host: 156.67.105.82
           username: root
           password: password@123
-          source: "resources/migration.sql"  # Path in the repository
+          source: "./src/main/resources/migration.sql"  # Path in the repository
           target: "/root/migrationfiles/migration.sql"  # Destination path on the server   
           
       - name: Run SQL Migration Script
