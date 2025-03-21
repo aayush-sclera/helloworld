@@ -49,7 +49,7 @@ jobs:
         with:
           host: 156.67.105.82
           username: root
-          password: 1a2s3d4f5g@d@1993
+          password: 1a2s3d4f5g@1993
           source: "./src/main/resources/migration.sql"  # Path in the repository
           target: "/root/migrationfiles/migration.sql"  # Destination path on the server   
           
@@ -64,7 +64,7 @@ jobs:
             apt-get update && apt-get install -y mysql-client
 
             # Run the SQL migration script
-            mysql -h localhost -u root -p password@123 cicdpipeline < /root/migrationfiles/migration.sql
+            mysql -h localhost -u root -ppassword@123 cicdpipeline < /root/migrationfiles/migration.sql
             
       - name: Restart Application on Server
         uses: appleboy/ssh-action@v0.1.8
