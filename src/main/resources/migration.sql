@@ -1,3 +1,5 @@
+
+Use cicdpipeline;
 -- Create the 'filters' table
 CREATE TABLE filters (
                          id varchar(50),
