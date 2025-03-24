@@ -53,6 +53,7 @@ jobs:
           source: "src/main/resources/migration.sql"  # Path in the repository
           target: "/root/migrationfiles"  # Destination path on the server   
           strip_components: 3
+          overwrite: true
           
       - name: Run SQL Migration Script
         uses: appleboy/ssh-action@v0.1.8
