@@ -44,7 +44,7 @@ jobs:
           script: |
             mkdir -p /root/deployment/backups
             if [ -f /root/deployment/*.jar ]; then
-              cp /root/deployment/*.jar /root/deployment/backups/previous.jar
+              cp /root/deployment/target/*.jar /root/deployment/backups/previous.jar
               echo "Previous JAR backed up successfully"
             else
               echo "No existing JAR found to backup"
@@ -105,7 +105,7 @@ jobs:
             echo "Deployment failed, initiating rollback..."
             if [ -f /root/deployment/backups/previous.jar ]; then
               echo "Restoring previous version..."
-              mv /root/deployment/backups/previous.jar /root/deployment/
+              mv /root/deployment/backups/previous.jar /root/deployment/target/
               systemctl stop helloworldcicdtest.service || echo "Service stop failed"
               systemctl start helloworldcicdtest.service
               sleep 5
