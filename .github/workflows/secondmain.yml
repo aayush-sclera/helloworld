@@ -60,26 +60,26 @@ jobs:
           source: "target/*.jar"
           target: "/root/deployment"
 
-      - name: Transfer SQL Script to Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: 156.67.105.82
-          username: root
-          password: 1a2s3d4f5g@1993
-          source: "src/main/resources/migration.sql"
-          target: "/root/migrationfiles"
-          strip_components: 3
-          overwrite: true
+      # - name: Transfer SQL Script to Server
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: 156.67.105.82
+      #     username: root
+      #     password: 1a2s3d4f5g@1993
+      #     source: "src/main/resources/migration.sql"
+      #     target: "/root/migrationfiles"
+      #     strip_components: 3
+      #     overwrite: true
           
-      - name: Run SQL Migration Script
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: 156.67.105.82
-          username: root
-          password: 1a2s3d4f5g@1993
-          script: |
-            apt-get update && apt-get install -y mysql-client
-            mysql -h localhost -u root -ppassword@123 cicdpipeline < /root/migrationfiles/migration.sql
+      # - name: Run SQL Migration Script
+      #   uses: appleboy/ssh-action@v0.1.8
+      #   with:
+      #     host: 156.67.105.82
+      #     username: root
+      #     password: 1a2s3d4f5g@1993
+      #     script: |
+      #       apt-get update && apt-get install -y mysql-client
+      #       mysql -h localhost -u root -ppassword@123 cicdpipeline < /root/migrationfiles/migration.sql
             
       - name: Restart Application on Server
         id: restart-app
