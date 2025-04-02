@@ -16,8 +16,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}  # This uses the branch input from the manual trigger
-          fetch-depth: 0 # Ensure full history
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
 
       - name: List Repository Files
         run: |
@@ -32,26 +32,42 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn clean package # If pom.xml is in root
-        # run: mvn -f backend/pom.xml clean package # Uncomment if pom.xml is inside a subfolder
+        run: mvn clean package
 
-      - name: Transfer JAR to Server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Backup previous JAR on server
+        uses: appleboy/ssh-action@v0.1.8
+        id: backup-jar
         with:
           host: 156.67.105.82
           username: root
           password: 1a2s3d4f5g@1993
-          source: "target/*.jar" # Update path if needed
+          script: |
+            mkdir -p /root/deployment/backups
+            if [ -f /root/deployment/*.jar ]; then
+              cp /root/deployment/*.jar /root/deployment/backups/previous.jar
+              echo "Previous JAR backed up successfully"
+            else
+              echo "No existing JAR found to backup"
+            fi
+
+      - name: Transfer new JAR to Server
+        uses: appleboy/scp-action@v0.1.7
+        id: transfer-jar
+        with:
+          host: 156.67.105.82
+          username: root
+          password: 1a2s3d4f5g@1993
+          source: "target/*.jar"
           target: "/root/deployment"
-          
+
       - name: Transfer SQL Script to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: 156.67.105.82
           username: root
           password: 1a2s3d4f5g@1993
-          source: "src/main/resources/migration.sql"  # Path in the repository
-          target: "/root/migrationfiles"  # Destination path on the server   
+          source: "src/main/resources/migration.sql"
+          target: "/root/migrationfiles"
           strip_components: 3
           overwrite: true
           
@@ -62,28 +78,40 @@ jobs:
           username: root
           password: 1a2s3d4f5g@1993
           script: |
-            # Install MySQL client if not already installed
             apt-get update && apt-get install -y mysql-client
-
-            # Run the SQL migration script
             mysql -h localhost -u root -ppassword@123 cicdpipeline < /root/migrationfiles/migration.sql
             
       - name: Restart Application on Server
+        id: restart-app
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: 156.67.105.82
           username: root
           password: 1a2s3d4f5g@1993
-          debug: true
           script: |
-            # Stop the service if it's running
             systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
-
-            # Start the service with the new JAR file
             systemctl start helloworldcicdtest.service
+            sleep 5  # Give some time for the service to start
+            systemctl status helloworldcicdtest.service && exit 0 || exit 1
 
-            # Optionally check the status to ensure it started correctly
-            systemctl status helloworldcicdtest.service || echo "Failed to start service"
-
-            # If you want to make sure it's running in the background
-            echo "Application restarted successfully"
+      - name: Rollback if deployment failed
+        if: steps.restart-app.outcome == 'failure'
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: 156.67.105.82
+          username: root
+          password: 1a2s3d4f5g@1993
+          script: |
+            echo "Deployment failed, initiating rollback..."
+            if [ -f /root/deployment/backups/previous.jar ]; then
+              echo "Restoring previous version..."
+              mv /root/deployment/backups/previous.jar /root/deployment/
+              systemctl stop helloworldcicdtest.service || echo "Service stop failed"
+              systemctl start helloworldcicdtest.service
+              sleep 5
+              systemctl status helloworldcicdtest.service
+              echo "Rollback completed successfully"
+            else
+              echo "No backup found to rollback to"
+              exit 1
+            fi
