@@ -43,11 +43,12 @@ jobs:
           password: 1a2s3d4f5g@1993
           script: |
             mkdir -p /root/deployment/backups
-            if [ -f /root/deployment/target/*.jar ]; then
+            if ls /root/deployment/target/*.jar &>/dev/null; then
               cp /root/deployment/target/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/backups/previous.jar
               echo "Previous JAR backed up successfully"
             else
               echo "No existing JAR found to backup"
+              exit 0  # Continue workflow even if no backup exists
             fi
 
       - name: Transfer new JAR to Server
