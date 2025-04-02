@@ -81,6 +81,18 @@ jobs:
       #       apt-get update && apt-get install -y mysql-client
       #       mysql -h localhost -u root -ppassword@123 cicdpipeline < /root/migrationfiles/migration.sql
             
+      # - name: Restart Application on Server
+      #   id: restart-app
+      #   uses: appleboy/ssh-action@v0.1.8
+      #   with:
+      #     host: 156.67.105.82
+      #     username: root
+      #     password: 1a2s3d4f5g@1993
+      #     script: |
+      #       systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
+      #       systemctl start helloworldcicdtest.service
+      #       sleep 5  # Give some time for the service to start
+      #       systemctl status helloworldcicdtest.service && exit 0 || exit 1
       - name: Restart Application on Server
         id: restart-app
         uses: appleboy/ssh-action@v0.1.8
@@ -91,9 +103,16 @@ jobs:
           script: |
             systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
             systemctl start helloworldcicdtest.service
-            sleep 5  # Give some time for the service to start
-            systemctl status helloworldcicdtest.service && exit 0 || exit 1
-
+            sleep 5
+            # Explicitly check if the service is ACTIVE
+            if systemctl is-active --quiet helloworldcicdtest.service; then
+              echo "Service started successfully"
+              exit 0
+            else
+              echo "Service failed to start"
+              exit 1  # This will trigger the rollback
+            fi
+            
       - name: Rollback if deployment failed
         if: steps.restart-app.outcome == 'failure'
         uses: appleboy/ssh-action@v0.1.8
