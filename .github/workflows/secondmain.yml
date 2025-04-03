@@ -44,7 +44,7 @@ jobs:
           script: |
             mkdir -p /root/deployment/backups
             if ls /root/deployment/target/*.jar &>/dev/null; then
-              cp /root/deployment/target/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/backups/previous.jar
+              cp /root/deployment/target/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar
               echo "Previous JAR backed up successfully"
             else
               echo "No existing JAR found to backup"
@@ -124,9 +124,9 @@ jobs:
           password: 1a2s3d4f5g@1993
           script: |
             echo "Deployment failed, initiating rollback..."
-            if [ -f /root/deployment/backups/previous.jar ]; then
+            if [ -f /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar ]; then
               echo "Restoring previous version..."
-              mv /root/deployment/backups/previous.jar /root/deployment/target/
+              mv /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/target/
               systemctl stop helloworldcicdtest.service || echo "Service stop failed"
               systemctl start helloworldcicdtest.service
               sleep 5
