@@ -96,6 +96,7 @@ jobs:
       #       systemctl status helloworldcicdtest.service && exit 0 || exit 1
       - name: Restart Application on Server
         id: restart-app
+        continue-on-error: true
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: 156.67.105.82
