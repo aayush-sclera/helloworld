@@ -8,8 +8,8 @@ public class HellowroldApplication {
 
     public static void main(String[] args) {
 
-       System.out.println("Simulating startup failure...");
-        System.exit(1); // Force immediate failure
+       // System.out.println("Simulating startup failure...");
+       //  System.exit(1); // Force immediate failure
 
         SpringApplication.run(HellowroldApplication.class, args);
 
