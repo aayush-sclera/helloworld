@@ -51,15 +51,21 @@ jobs:
       #         exit 0  # Continue workflow even if no backup exists
       #       fi
 
-      - name: Transfer new JAR to Server
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}  # Critical for security
+
+      - name: Transfer JAR via SCP
         uses: appleboy/scp-action@v0.1.7
-        id: transfer-jar
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "target/*.jar"
-          target: "/root/testcicd"
+          target: "/root/deployment"
+          overwrite: true
 
       # - name: Transfer SQL Script to Server
       #   uses: appleboy/scp-action@v0.1.7
