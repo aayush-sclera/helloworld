@@ -63,12 +63,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu
-            sudo mkdir cicd
           source: "target/*.jar"
           target: "/ubuntu/cidtest/"
-          overwrite: true  
+          overwrite: true
+          debug: true
 
       # - name: Transfer SQL Script to Server
       #   uses: appleboy/scp-action@v0.1.7
