@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "target/*.jar"
-          target: "/root/deployment"
+          target: "/root/cicdtest"
           overwrite: true
 
       # - name: Transfer SQL Script to Server
