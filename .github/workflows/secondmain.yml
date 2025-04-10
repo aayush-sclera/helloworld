@@ -34,38 +34,38 @@ jobs:
       - name: Build with Maven
         run: mvn clean package
 
-      - name: Backup previous JAR on server
-        uses: appleboy/ssh-action@v0.1.8
-        id: backup-jar
-        with:
-          host: 156.67.105.82
-          username: root
-          password: 1a2s3d4f5g@1993
-          script: |
-            mkdir -p /root/deployment/backups
-            if ls /root/deployment/target/*.jar &>/dev/null; then
-              cp /root/deployment/target/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar
-              echo "Previous JAR backed up successfully"
-            else
-              echo "No existing JAR found to backup"
-              exit 0  # Continue workflow even if no backup exists
-            fi
+      # - name: Backup previous JAR on server
+      #   uses: appleboy/ssh-action@v0.1.8
+      #   id: backup-jar
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
+      #     password: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       mkdir -p /root/deployment/backups
+      #       if ls /root/deployment/target/*.jar &>/dev/null; then
+      #         cp /root/deployment/target/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar
+      #         echo "Previous JAR backed up successfully"
+      #       else
+      #         echo "No existing JAR found to backup"
+      #         exit 0  # Continue workflow even if no backup exists
+      #       fi
 
       - name: Transfer new JAR to Server
         uses: appleboy/scp-action@v0.1.7
         id: transfer-jar
         with:
-          host: 156.67.105.82
-          username: root
-          password: 1a2s3d4f5g@1993
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "target/*.jar"
-          target: "/root/deployment"
+          target: "/root/testcicd"
 
       # - name: Transfer SQL Script to Server
       #   uses: appleboy/scp-action@v0.1.7
       #   with:
-      #     host: 156.67.105.82
-      #     username: root
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
       #     password: 1a2s3d4f5g@1993
       #     source: "src/main/resources/migration.sql"
       #     target: "/root/migrationfiles"
@@ -75,9 +75,9 @@ jobs:
       # - name: Run SQL Migration Script
       #   uses: appleboy/ssh-action@v0.1.8
       #   with:
-      #     host: 156.67.105.82
-      #     username: root
-      #     password: 1a2s3d4f5g@1993
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
+      #     password: ${{ secrets.SSH_PRIVATE_KEY }}
       #     script: |
       #       apt-get update && apt-get install -y mysql-client
       #       mysql -h localhost -u root -ppassword@123 cicdpipeline < /root/migrationfiles/migration.sql
@@ -86,53 +86,53 @@ jobs:
       #   id: restart-app
       #   uses: appleboy/ssh-action@v0.1.8
       #   with:
-      #     host: 156.67.105.82
-      #     username: root
-      #     password: 1a2s3d4f5g@1993
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
+      #     password: ${{ secrets.SSH_PRIVATE_KEY }}
       #     script: |
       #       systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
       #       systemctl start helloworldcicdtest.service
       #       sleep 5  # Give some time for the service to start
       #       systemctl status helloworldcicdtest.service && exit 0 || exit 1
-      - name: Restart Application on Server
-        id: restart-app
-        continue-on-error: true
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: 156.67.105.82
-          username: root
-          password: 1a2s3d4f5g@1993
-          script: |
-            systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
-            systemctl start helloworldcicdtest.service
-            sleep 5
-            # Explicitly check if the service is ACTIVE
-            if systemctl is-active --quiet helloworldcicdtest.service; then
-              echo "Service started successfully"
-              exit 0
-            else
-              echo "Service failed to start"
-              exit 1  # This will trigger the rollback
-            fi
+      # - name: Restart Application on Server
+      #   id: restart-app
+      #   continue-on-error: true
+      #   uses: appleboy/ssh-action@v0.1.8
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
+      #     password: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       systemctl stop helloworldcicdtest.service || echo "Service not running or failed to stop"
+      #       systemctl start helloworldcicdtest.service
+      #       sleep 5
+      #       # Explicitly check if the service is ACTIVE
+      #       if systemctl is-active --quiet helloworldcicdtest.service; then
+      #         echo "Service started successfully"
+      #         exit 0
+      #       else
+      #         echo "Service failed to start"
+      #         exit 1  # This will trigger the rollback
+      #       fi
             
-      - name: Rollback if deployment failed
-        if: steps.restart-app.outcome == 'failure'
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: 156.67.105.82
-          username: root
-          password: 1a2s3d4f5g@1993
-          script: |
-            echo "Deployment failed, initiating rollback..."
-            if [ -f /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar ]; then
-              echo "Restoring previous version..."
-              mv /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/target/
-              systemctl stop helloworldcicdtest.service || echo "Service stop failed"
-              systemctl start helloworldcicdtest.service
-              sleep 5
-              systemctl status helloworldcicdtest.service
-              echo "Rollback completed successfully"
-            else
-              echo "No backup found to rollback to"
-              exit 1
-            fi
+      # - name: Rollback if deployment failed
+      #   if: steps.restart-app.outcome == 'failure'
+      #   uses: appleboy/ssh-action@v0.1.8
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USERNAME }}
+      #     password: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       echo "Deployment failed, initiating rollback..."
+      #       if [ -f /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar ]; then
+      #         echo "Restoring previous version..."
+      #         mv /root/deployment/backups/hellowrold-0.0.1-SNAPSHOT.jar /root/deployment/target/
+      #         systemctl stop helloworldcicdtest.service || echo "Service stop failed"
+      #         systemctl start helloworldcicdtest.service
+      #         sleep 5
+      #         systemctl status helloworldcicdtest.service
+      #         echo "Rollback completed successfully"
+      #       else
+      #         echo "No backup found to rollback to"
+      #         exit 1
+      #       fi
