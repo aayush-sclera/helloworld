@@ -55,7 +55,7 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}  # Critical for security
+          known_hosts: ${{ secrets.SSH_KNOWN_HOST }}  # Critical for security
 
       - name: Transfer JAR via SCP
         uses: appleboy/scp-action@v0.1.7
